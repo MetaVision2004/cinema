@@ -415,6 +415,9 @@ def admin_logout():
 @app.route('/login', methods=['GET', 'POST'])
 def user_login():
     if current_user.is_authenticated:
+        # Si ya está logueado, admin va al dashboard, usuarios al inicio
+        if hasattr(current_user, 'rol') and current_user.rol in ('admin', 'superadmin'):
+            return redirect(url_for('admin_dashboard'))
         return redirect(url_for('index'))
     
     if request.method == 'POST':
@@ -426,6 +429,9 @@ def user_login():
             user = User(user_data)
             login_user(user)
             next_page = request.args.get('next')
+            # Admins van directo al panel
+            if user_data.get('rol') in ('admin', 'superadmin'):
+                return redirect(next_page or url_for('admin_dashboard'))
             return redirect(next_page or url_for('index'))
         else:
             flash('Credenciales incorrectas. Inténtalo de nuevo.', 'danger')

@@ -1,48 +1,534 @@
-{% extends "admin/base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CINEVOX — Acceso Administrativo</title>
+  <meta name="description" content="Panel de administración CINEVOX — Inicio de sesión seguro"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-{% block title %}Login - Cinema Admin{% endblock %}
-{% block page_title %}Iniciar Sesión{% endblock %}
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e2c47a;
+      --gold-glow: rgba(201,168,76,0.35);
+      --dark: #070709;
+      --dark2: #0e0e14;
+      --dark3: #151520;
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+      --red: #e53935;
+      --green: #43a047;
+      --text: #e8e8f0;
+      --muted: #7070a0;
+    }
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">Panel de Administración</h4>
-            </div>
-            <div class="card-body">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+    html, body {
+      height: 100%;
+      background: var(--dark);
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      overflow: hidden;
+    }
 
-                <form method="POST">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+    /* ── CINEMATIC BACKGROUND ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,0.07) 0%, transparent 70%),
+                  radial-gradient(ellipse 100% 80% at 0% 100%, rgba(80,40,120,0.12) 0%, transparent 60%),
+                  var(--dark);
+    }
 
-        <div class="text-center mt-3">
-            <small class="text-muted">
-                Sistema de Gestión Cinema - Panel Administrativo
-            </small>
-        </div>
-    </div>
+    /* Film strip left */
+    .film-strip {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 52px;
+      background: #0a0a10;
+      border-right: 1px solid #1a1a28;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .film-hole {
+      flex-shrink: 0;
+      width: 26px; height: 18px;
+      margin: 6px 0;
+      border: 2px solid #2a2a40;
+      border-radius: 3px;
+      background: #070709;
+      animation: filmScroll 8s linear infinite;
+    }
+    @keyframes filmScroll {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(30px); }
+    }
+
+    /* Film strip right */
+    .film-strip-r {
+      left: auto; right: 0;
+      border-right: none;
+      border-left: 1px solid #1a1a28;
+    }
+    .film-hole-r {
+      animation-delay: -4s;
+    }
+
+    /* ── GATE CURTAINS ── */
+    .curtain-left,
+    .curtain-right {
+      position: fixed;
+      top: 0; bottom: 0;
+      width: 50%;
+      z-index: 50;
+      background: linear-gradient(to bottom, #0a0008, #0d000a 60%, #0a0008);
+      transition: transform 1.1s cubic-bezier(0.77,0,0.18,1);
+      pointer-events: none;
+    }
+    .curtain-left  { left: 0;   transform: translateX(0); transform-origin: left; }
+    .curtain-right { right: 0;  transform: translateX(0); transform-origin: right; }
+
+    /* Curtain texture */
+    .curtain-left::after, .curtain-right::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        rgba(0,0,0,0.15) 3px,
+        transparent 6px
+      );
+    }
+    .curtain-left::before {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 40px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.12));
+      border-right: 1px solid rgba(201,168,76,0.18);
+    }
+    .curtain-right::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 40px;
+      background: linear-gradient(to left, transparent, rgba(201,168,76,0.12));
+      border-left: 1px solid rgba(201,168,76,0.18);
+    }
+
+    /* Open state */
+    body.curtains-open .curtain-left  { transform: translateX(-100%); }
+    body.curtains-open .curtain-right { transform: translateX(100%); }
+
+    /* ── MAIN WRAPPER ── */
+    .page {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px 20px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 44px 40px 36px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.06),
+                  0 40px 80px rgba(0,0,0,0.6),
+                  0 0 60px rgba(201,168,76,0.04);
+      animation: cardIn .6s ease both;
+      animation-delay: .15s;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(24px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Logo */
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      letter-spacing: 6px;
+      color: var(--text);
+    }
+    .logo-text span {
+      color: #43a047;
+    }
+    .logo-badge {
+      display: inline-block;
+      margin-top: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid #2a2a40;
+      border-radius: 20px;
+      padding: 3px 12px;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 28px;
+    }
+    .divider-line { flex: 1; height: 1px; background: var(--glass-border); }
+    .divider-text {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Flash messages */
+    .flash {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .flash-danger {
+      background: rgba(229,57,53,0.12);
+      border: 1px solid rgba(229,57,53,0.3);
+      color: #ef9a9a;
+    }
+    .flash-success {
+      background: rgba(67,160,71,0.12);
+      border: 1px solid rgba(67,160,71,0.3);
+      color: #a5d6a7;
+    }
+    .flash-warning {
+      background: rgba(255,160,0,0.12);
+      border: 1px solid rgba(255,160,0,0.28);
+      color: #ffe082;
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      transition: color .2s;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 13px 14px 13px 42px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .25s, box-shadow .25s, background .25s;
+    }
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      border-color: rgba(201,168,76,0.5);
+      background: rgba(201,168,76,0.04);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+    }
+    input[type="email"]:focus ~ .input-icon,
+    input[type="password"]:focus ~ .input-icon { color: var(--gold); }
+
+    /* Toggle password visibility */
+    .toggle-pw {
+      position: absolute;
+      right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      padding: 4px;
+      transition: color .2s;
+    }
+    .toggle-pw:hover { color: var(--gold); }
+
+    /* Submit button */
+    .btn-login {
+      width: 100%;
+      margin-top: 8px;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold) 0%, #a8751b 100%);
+      color: #0a0a0a;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-login::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .btn-login:hover { transform: translateY(-1px); box-shadow: 0 8px 24px var(--gold-glow); }
+    .btn-login:hover::before { opacity: 1; }
+    .btn-login:active { transform: translateY(0); }
+
+    /* Loading spinner inside button */
+    .btn-login .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin: 0 auto;
+    }
+    .btn-login.loading .btn-text { display: none; }
+    .btn-login.loading .spinner  { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer link */
+    .card-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card-footer a {
+      color: var(--gold);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .card-footer a:hover { color: var(--gold-light); }
+
+    /* ── SUCCESS OVERLAY ── */
+    .success-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .4s;
+    }
+    .success-overlay.show {
+      opacity: 1; pointer-events: all;
+    }
+    .success-ring {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin-bottom: 20px;
+      animation: successPop .5s cubic-bezier(.34,1.56,.64,1) both;
+      box-shadow: 0 0 40px var(--gold-glow);
+    }
+    @keyframes successPop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .success-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 6px;
+      color: var(--gold);
+      text-align: center;
+    }
+    .success-sub {
+      font-size: 12px; letter-spacing: 2px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Spotlight sweep on success */
+    .spotlight {
+      position: fixed; inset: 0; z-index: 199;
+      pointer-events: none;
+      background: conic-gradient(from 220deg at 50% -10%,
+        transparent 0deg, rgba(201,168,76,0.07) 30deg, transparent 60deg);
+      opacity: 0;
+      transition: opacity .8s;
+    }
+    .spotlight.show { opacity: 1; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #2a2a40; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg"></div>
+
+<!-- Film strips -->
+<div class="film-strip" aria-hidden="true">
+  {% for i in range(40) %}<div class="film-hole"></div>{% endfor %}
 </div>
-{% endblock %}
+<div class="film-strip film-strip-r" aria-hidden="true">
+  {% for i in range(40) %}<div class="film-hole film-hole-r"></div>{% endfor %}
+</div>
+
+<!-- Curtains (door) -->
+<div class="curtain-left"  aria-hidden="true"></div>
+<div class="curtain-right" aria-hidden="true"></div>
+
+<!-- Spotlight (success effect) -->
+<div class="spotlight" id="spotlight"></div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-ring">🎬</div>
+  <div class="success-text">Acceso Concedido</div>
+  <div class="success-sub">Abriendo panel administrativo…</div>
+</div>
+
+<!-- PAGE -->
+<main class="page">
+  <div class="card" role="main">
+
+    <div class="logo">
+      <div class="logo-text">CINE<span>VOX</span></div>
+      <div class="logo-badge">Panel Administrativo</div>
+    </div>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-text">Iniciar Sesión</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}" role="alert">
+            {% if category == 'danger' %}⚠️{% elif category == 'success' %}✓{% else %}ℹ️{% endif %}
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" id="loginForm" novalidate>
+
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <div class="input-wrap">
+          <input type="email" id="email" name="email" 
+                 autocomplete="email" required
+                 placeholder="admin@cinevox.com"/>
+          <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="input-wrap">
+          <input type="password" id="password" name="password" 
+                 autocomplete="current-password" required
+                 placeholder="••••••••"/>
+          <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          <button type="button" class="toggle-pw" id="togglePw" aria-label="Mostrar contraseña">
+            <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" id="btnLogin">
+        <span class="btn-text">Entrar al Panel</span>
+        <div class="spinner"></div>
+      </button>
+
+    </form>
+
+    <div class="card-footer">
+      <a href="{{ url_for('index') }}">← Volver al sitio principal</a>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  /* ── Toggle password ── */
+  const togglePw = document.getElementById('togglePw');
+  const pwInput  = document.getElementById('password');
+  const eyeIcon  = document.getElementById('eyeIcon');
+
+  togglePw.addEventListener('click', () => {
+    const show = pwInput.type === 'password';
+    pwInput.type = show ? 'text' : 'password';
+    eyeIcon.innerHTML = show
+      ? `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  });
+
+  /* ── Form submit — show door opening ── */
+  const form    = document.getElementById('loginForm');
+  const btn     = document.getElementById('btnLogin');
+  const overlay = document.getElementById('successOverlay');
+  const spot    = document.getElementById('spotlight');
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}{% if cat == 'danger' %}
+    /* shake on error */
+    document.querySelector('.card').style.animation = 'none';
+    {% endif %}{% endfor %}{% endif %}
+  {% endwith %}
+
+  form.addEventListener('submit', function(e) {
+    if (!form.checkValidity()) return;
+    btn.classList.add('loading');
+    btn.disabled = true;
+  });
+
+  /* ── If we just logged in (flash success redirected here), skip.
+        Instead detect URL to trigger curtain open after page load ── */
+  window.addEventListener('DOMContentLoaded', () => {
+    // Open curtains slightly after load for cinematic feel
+    setTimeout(() => {
+      document.body.classList.add('curtains-open');
+    }, 200);
+  });
+
+  /* Check if flash has success (post-login redirect shows dashboard,
+     so we only need the curtain effect on first arrival) */
+</script>
+</body>
+</html>

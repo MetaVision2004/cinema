@@ -1,123 +1,604 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard Administrativo - Cinema{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .sidebar {
-            min-height: 100vh;
-            background: #343a40;
-            color: white;
-        }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,.75);
-            padding: 0.75rem 1rem;
-        }
-        .sidebar .nav-link:hover {
-            color: white;
-            background: rgba(255,255,255,.1);
-        }
-        .sidebar .nav-link.active {
-            color: white;
-            background: #0d6efd;
-        }
-        .content-wrapper {
-            margin-left: 0;
-        }
-        @media (min-width: 768px) {
-            .content-wrapper {
-                margin-left: 250px;
-            }
-        }
-        .stats-card {
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .table-responsive {
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Panel Admin — CINEVOX{% endblock %}</title>
+  <meta name="description" content="Panel de gestión administrativa CINEVOX"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:        #c9a84c;
+      --gold-light:  #e2c47a;
+      --gold-dim:    #7a6030;
+      --gold-glow:   rgba(201,168,76,0.25);
+      --dark:        #070709;
+      --dark2:       #0e0e14;
+      --dark3:       #12121a;
+      --dark4:       #1a1a28;
+      --surface:     rgba(255,255,255,0.035);
+      --surface-h:   rgba(255,255,255,0.06);
+      --border:      rgba(255,255,255,0.07);
+      --border-h:    rgba(201,168,76,0.3);
+      --text:        #e2e2f0;
+      --text-2:      #a0a0c0;
+      --muted:       #606080;
+      --red:         #e53935;
+      --green:       #43a047;
+      --blue:        #3d7fff;
+      --purple:      #8b5cf6;
+      --sidebar-w:   240px;
+      --topbar-h:    60px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--dark);
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--dark2); }
+    ::-webkit-scrollbar-thumb { background: var(--dark4); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+    /* ══════════════════════════════
+       SIDEBAR
+    ══════════════════════════════ */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--dark2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: transform .3s ease;
+    }
+
+    /* Logo */
+    .sidebar-logo {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 28px 20px 20px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+    .sidebar-logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.7rem;
+      letter-spacing: 5px;
+      color: var(--text);
+      line-height: 1;
+    }
+    .sidebar-logo-text span { color: #43a047; }
+    .sidebar-logo-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Nav */
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+    }
+    .nav-section-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 8px 10px 6px;
+      margin-top: 12px;
+    }
+    .nav-section-label:first-child { margin-top: 0; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: background .2s, color .2s, border-color .2s;
+      border: 1px solid transparent;
+      margin-bottom: 2px;
+    }
+    .nav-link i {
+      width: 18px; text-align: center;
+      font-size: 13px;
+      opacity: .75;
+      transition: opacity .2s;
+    }
+    .nav-link:hover {
+      background: var(--surface-h);
+      color: var(--text);
+    }
+    .nav-link:hover i { opacity: 1; }
+    .nav-link.active {
+      background: rgba(201,168,76,0.1);
+      color: var(--gold);
+      border-color: rgba(201,168,76,0.2);
+    }
+    .nav-link.active i { opacity: 1; color: var(--gold); }
+
+    /* Badge count */
+    .nav-badge {
+      margin-left: auto;
+      font-size: 10px;
+      background: var(--gold);
+      color: #0a0a0a;
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+    }
+    .user-chip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--surface);
+      margin-bottom: 8px;
+    }
+    .user-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      color: #0a0a0a;
+      flex-shrink: 0;
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name {
+      font-size: 12px; font-weight: 600;
+      color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .user-role {
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .btn-logout {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1px solid rgba(229,57,53,0.2);
+      background: rgba(229,57,53,0.06);
+      color: #ef9a9a;
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+    .btn-logout:hover {
+      background: rgba(229,57,53,0.14);
+      border-color: rgba(229,57,53,0.4);
+      color: #ffcdd2;
+    }
+
+    /* ══════════════════════════════
+       TOP BAR
+    ══════════════════════════════ */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-w);
+      right: 0;
+      height: var(--topbar-h);
+      background: rgba(7,7,9,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 28px;
+      z-index: 90;
+      gap: 12px;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .topbar-breadcrumb {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .topbar-breadcrumb span { color: var(--gold); }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 14px;
+    }
+
+    .topbar-time {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .topbar-site-link {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px;
+      color: var(--text-2);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+    .topbar-site-link:hover {
+      border-color: var(--border-h);
+      color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+
+    /* ══════════════════════════════
+       MAIN CONTENT
+    ══════════════════════════════ */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      padding-top: var(--topbar-h);
+      min-height: 100vh;
+    }
+
+    .content-inner {
+      padding: 32px 28px;
+    }
+
+    /* Flash messages */
+    .flash-stack { margin-bottom: 20px; }
+    .flash {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      margin-bottom: 8px;
+      animation: flashIn .3s ease;
+    }
+    @keyframes flashIn { from { opacity: 0; transform: translateY(-6px); } }
+    .flash-success {
+      background: rgba(67,160,71,0.1);
+      border: 1px solid rgba(67,160,71,0.25);
+      color: #a5d6a7;
+    }
+    .flash-danger {
+      background: rgba(229,57,53,0.1);
+      border: 1px solid rgba(229,57,53,0.25);
+      color: #ef9a9a;
+    }
+    .flash-warning {
+      background: rgba(255,160,0,0.1);
+      border: 1px solid rgba(255,160,0,0.22);
+      color: #ffe082;
+    }
+    .flash-info {
+      background: rgba(61,127,255,0.1);
+      border: 1px solid rgba(61,127,255,0.22);
+      color: #90caf9;
+    }
+    .flash-close {
+      margin-left: auto; background: none; border: none;
+      color: inherit; cursor: pointer; font-size: 16px; opacity: .6;
+    }
+    .flash-close:hover { opacity: 1; }
+
+    /* ── Shared Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: border-color .2s;
+    }
+    .card:hover { border-color: rgba(255,255,255,0.1); }
+
+    .card-header-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-header-bar h2 {
+      font-size: 15px; font-weight: 600;
+      color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-header-bar h2 i { color: var(--gold); font-size: 13px; }
+
+    /* ── Tables ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      background: var(--dark3);
+      padding: 11px 14px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      color: var(--text-2);
+      vertical-align: middle;
+    }
+    tr:hover td { background: var(--surface-h); color: var(--text); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 7px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer; text-decoration: none;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, #a8751b 100%);
+      color: #0a0a0a;
+      border-color: transparent;
+    }
+    .btn-gold:hover { box-shadow: 0 4px 16px var(--gold-glow); filter: brightness(1.08); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+    }
+    .btn-outline:hover { border-color: var(--border-h); color: var(--gold); background: rgba(201,168,76,0.05); }
+
+    .btn-danger {
+      background: rgba(229,57,53,0.1);
+      border: 1px solid rgba(229,57,53,0.2);
+      color: #ef9a9a;
+    }
+    .btn-danger:hover { background: rgba(229,57,53,0.2); border-color: rgba(229,57,53,0.4); }
+
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+    /* ── Form controls ── */
+    .form-control {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus {
+      border-color: rgba(201,168,76,0.4);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.07);
+    }
+    .form-control::placeholder { color: var(--muted); }
+    select.form-control option { background: var(--dark3); }
+
+    .form-label {
+      display: block;
+      font-size: 10px; letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .form-group { margin-bottom: 18px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .5px;
+    }
+    .badge-green { background: rgba(67,160,71,0.15); color: #81c784; border: 1px solid rgba(67,160,71,0.2); }
+    .badge-red   { background: rgba(229,57,53,0.15); color: #e57373; border: 1px solid rgba(229,57,53,0.2); }
+    .badge-gold  { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.2); }
+    .badge-blue  { background: rgba(61,127,255,0.15); color: #90caf9; border: 1px solid rgba(61,127,255,0.2); }
+    .badge-muted { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .page-header-left h1 {
+      font-size: 22px; font-weight: 700;
+      color: var(--text); margin-bottom: 2px;
+    }
+    .page-header-left p { font-size: 13px; color: var(--muted); }
+
+    /* ── Mobile hamburger ── */
+    .hamburger {
+      display: none;
+      background: none; border: none;
+      color: var(--text); cursor: pointer;
+      padding: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); box-shadow: 8px 0 32px rgba(0,0,0,.6); }
+      .topbar { left: 0; }
+      .main-content { margin-left: 0; }
+      .hamburger { display: flex; }
+      .content-inner { padding: 20px 16px; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <!-- Sidebar -->
-    <nav class="sidebar position-fixed d-flex flex-column p-3" style="width: 250px;">
-        <h5 class="text-center mb-4">
-            <i class="fas fa-film me-2"></i>
-            Cinema Admin
-        </h5>
-        <ul class="nav nav-pills flex-column">
-            <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
-                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'peliculas' in request.endpoint %}active{% endif %}" href="{{ url_for('admin_peliculas') }}">
-                    <i class="fas fa-film me-2"></i>Películas
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'funciones' in request.endpoint %}active{% endif %}" href="{{ url_for('admin_funciones') }}">
-                    <i class="fas fa-calendar me-2"></i>Funciones
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'asientos' in request.endpoint %}active{% endif %}" href="{{ url_for('admin_asientos') }}">
-                    <i class="fas fa-chair me-2"></i>Asientos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'generos' in request.endpoint %}active{% endif %}" href="{{ url_for('admin_generos') }}">
-                    <i class="fas fa-tags me-2"></i>Géneros
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'actores' in request.endpoint %}active{% endif %}" href="{{ url_for('admin_actores') }}">
-                    <i class="fas fa-user me-2"></i>Actores
-                </a>
-            </li>
-        </ul>
-        <div class="mt-auto">
-            <a class="nav-link" href="{{ url_for('index') }}">
-                <i class="fas fa-home me-2"></i>Volver al sitio
-            </a>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="content-wrapper">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-            <div class="container-fluid">
-                <span class="navbar-brand mb-0 h1">{% block page_title %}{% endblock %}</span>
-                <div class="ms-auto">
-                    <a class="btn btn-outline-danger" href="{{ url_for('admin_logout') }}">Cerrar Sesión</a>
-                </div>
-            </div>
-        </nav>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
 
-        <div class="container-fluid p-4">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+  <a class="sidebar-logo" href="{{ url_for('admin_dashboard') }}">
+    <div class="sidebar-logo-text">CINE<span>VOX</span></div>
+    <div class="sidebar-logo-badge">Admin Panel</div>
+  </a>
 
-            {% block content %}{% endblock %}
-        </div>
+  <nav class="sidebar-nav" aria-label="Navegación principal">
+    <div class="nav-section-label">Principal</div>
+
+    <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}"
+       href="{{ url_for('admin_dashboard') }}">
+      <i class="fas fa-chart-line"></i> Dashboard
+    </a>
+
+    <div class="nav-section-label">Contenido</div>
+
+    <a class="nav-link {% if 'peliculas' in request.endpoint %}active{% endif %}"
+       href="{{ url_for('admin_peliculas') }}">
+      <i class="fas fa-film"></i> Películas
+    </a>
+
+    <a class="nav-link {% if 'funciones' in request.endpoint %}active{% endif %}"
+       href="{{ url_for('admin_funciones') }}">
+      <i class="fas fa-calendar-alt"></i> Funciones
+    </a>
+
+    <a class="nav-link {% if 'asientos' in request.endpoint %}active{% endif %}"
+       href="{{ url_for('admin_asientos') }}">
+      <i class="fas fa-chair"></i> Asientos
+    </a>
+
+    <div class="nav-section-label">Catálogo</div>
+
+    <a class="nav-link {% if 'generos' in request.endpoint %}active{% endif %}"
+       href="{{ url_for('admin_generos') }}">
+      <i class="fas fa-tags"></i> Géneros
+    </a>
+
+    <a class="nav-link {% if 'actores' in request.endpoint %}active{% endif %}"
+       href="{{ url_for('admin_actores') }}">
+      <i class="fas fa-user-tie"></i> Actores
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    {% if current_user.is_authenticated %}
+    <div class="user-chip">
+      <div class="user-avatar">{{ current_user.nombre[0]|upper if current_user.nombre else 'A' }}</div>
+      <div class="user-info">
+        <div class="user-name">{{ current_user.nombre }}</div>
+        <div class="user-role">{{ current_user.rol|upper }}</div>
+      </div>
     </div>
+    {% endif %}
+    <a class="btn-logout" href="{{ url_for('admin_logout') }}">
+      <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </a>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {% block scripts %}{% endblock %}
+</aside>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Abrir menú">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div>
+    <div class="topbar-title">{% block page_title %}Panel{{ '' }}{% endblock %}</div>
+    <div class="topbar-breadcrumb">CINEVOX › <span>{% block breadcrumb %}Dashboard{% endblock %}</span></div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="topbar-time" id="topbarTime"></div>
+    <a class="topbar-site-link" href="{{ url_for('index') }}" target="_blank">
+      <i class="fas fa-external-link-alt" style="font-size:10px;"></i>
+      Ver sitio
+    </a>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main-content">
+  <div class="content-inner">
+
+    <!-- Flashes -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'info' }}"
+                 role="alert">
+              <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'danger' else 'info-circle' }}"></i>
+              {{ message }}
+              <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<script>
+  /* Live clock */
+  function updateClock() {
+    const el = document.getElementById('topbarTime');
+    if (!el) return;
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    el.textContent = `${h}:${m}:${s}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* Mobile sidebar toggle */
+  const sidebar   = document.getElementById('sidebar');
+  const hamburger = document.getElementById('hamburger');
+  hamburger.addEventListener('click', () => sidebar.classList.toggle('open'));
+  document.addEventListener('click', e => {
+    if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+      sidebar.classList.remove('open');
+    }
+  });
+</script>
+
+{% block scripts %}{% endblock %}
 </body>
 </html>

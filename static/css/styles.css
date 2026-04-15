@@ -79,7 +79,7 @@ a{color:inherit;text-decoration:none;}
   font-family:var(--font-d);font-size:22px;letter-spacing:3px;
   color:var(--white);
 }
-.nav-logo span{color:var(--lime);}
+.nav-logo span{color:#43a047;}
 
 /* STEP INDICATOR */
 #step-indicator{
@@ -733,7 +733,7 @@ a{color:inherit;text-decoration:none;}
 .ticket-logo{
   font-family:var(--font-d);font-size:20px;letter-spacing:3px;color:var(--white);
 }
-.ticket-logo span{color:var(--lime);}
+.ticket-logo span{color:#43a047;}
 .ticket-type{
   font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);
 }
@@ -883,7 +883,7 @@ a{color:inherit;text-decoration:none;}
   font-family:var(--font-d);font-size:40px;letter-spacing:4px;color:var(--white);
   animation:logoPulse 1.5s ease infinite;
 }
-.loader-logo span{color:var(--lime);}
+.loader-logo span{color:#43a047;}
 @keyframes logoPulse{0%,100%{opacity:.5;}50%{opacity:1;}}
 .loader-bar{
   width:120px;height:2px;background:var(--charcoal);border-radius:2px;overflow:hidden;
@@ -1619,7 +1619,7 @@ body::after{
 }
 
 .auth-logo span {
-  color: var(--lime);
+  color: #43a047;
 }
 
 .auth-subtitle {
