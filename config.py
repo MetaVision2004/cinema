@@ -1,10 +1,10 @@
 import os
 
-DB_HOST = os.environ.get('DB_HOST', 'railway')
-DB_PORT = int(os.environ.get('DB_PORT', 3306))
-DB_USER = os.environ.get('DB_USER', 'root')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-DB_NAME = os.environ.get('DB_NAME', 'cinema')
+DB_HOST = os.environ.get('MYSQLHOST', 'railway')
+DB_PORT = int(os.environ.get('MYSQLPORT', 3306))
+DB_USER = os.environ.get('MYSQLUSER', 'root')
+DB_PASSWORD = os.environ.get('MYSQLPASSWORD', '')
+DB_NAME = os.environ.get('MYSQLDATABASE', 'cinema')
 
 MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
