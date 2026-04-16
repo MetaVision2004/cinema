@@ -11,6 +11,39 @@ def get_db_connection():
         port=DB_PORT
     )
 
+def init_database_if_empty():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SHOW TABLES")
+        tables = cursor.fetchall()
+        
+        if len(tables) == 0:
+            print("==================================")
+            print(" Inicializando Base de Datos Automáticamente ")
+            import os
+            sql_path = os.path.join(os.path.dirname(__file__), 'cinema.sql')
+            if os.path.exists(sql_path):
+                with open(sql_path, 'r', encoding='utf-8') as f:
+                    sql_content = f.read()
+                
+                clean_sql = []
+                for line in sql_content.splitlines():
+                    if not line.strip().startswith('CREATE DATABASE') and not line.strip().startswith('USE `') and not line.strip().startswith('USE cinema'):
+                        clean_sql.append(line)
+                
+                final_sql = '\\n'.join(clean_sql)
+                
+                for result in cursor.execute(final_sql, multi=True):
+                    pass
+                conn.commit()
+                print("✅ Base de datos importada exitosamente en Railway!")
+            print("==================================")
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error inicializando dba: {e}")
+
 def get_peliculas_cartelera():
     conn = get_db_connection()
 

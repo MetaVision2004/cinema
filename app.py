@@ -7,7 +7,7 @@ import os
 from config import (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, 
                     MAIL_SERVER, MAIL_PORT, MAIL_USE_TLS, MAIL_USERNAME, MAIL_PASSWORD, EMAIL_DEFAULT_SENDER)
 
-from db import (get_db_connection, get_peliculas_cartelera, get_funciones_por_pelicula, get_asientos_disponibles, 
+from db import (init_database_if_empty, get_db_connection, get_peliculas_cartelera, get_funciones_por_pelicula, get_asientos_disponibles, 
                 create_reserva_temporal, delete_reserva_temporal, process_purchase,
                 get_ticket_by_code, mark_ticket_used, send_ticket_email, get_funcion_with_details,
                 get_all_peliculas, get_pelicula_by_id, create_pelicula, update_pelicula, delete_pelicula,
@@ -18,6 +18,10 @@ from db import (get_db_connection, get_peliculas_cartelera, get_funciones_por_pe
                 get_dashboard_stats, get_user_by_email, verify_user_credentials, create_user, reset_user_password, create_admin_user)
 
 app = Flask(__name__, static_folder='static', static_url_path='')
+
+# Asegurarse de que las tablas se creen si estamos en una DB vacía (especial para Railway)
+with app.app_context():
+    init_database_if_empty()
 
 # Configuración básica de Flask
 app.config['SECRET_KEY'] = 'tu_clave_secreta_muy_segura_aqui_2024'
