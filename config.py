@@ -1,6 +1,6 @@
 import os
 
-DB_HOST = os.environ.get('MYSQLHOST', 'railway')
+DB_HOST = os.environ.get('MYSQLHOST', '127.0.0.1')
 DB_PORT = int(os.environ.get('MYSQLPORT', 3306))
 DB_USER = os.environ.get('MYSQLUSER', 'root')
 DB_PASSWORD = os.environ.get('MYSQLPASSWORD', '')
