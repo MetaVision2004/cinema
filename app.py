@@ -21,7 +21,10 @@ app = Flask(__name__, static_folder='static', static_url_path='')
 
 # Asegurarse de que las tablas se creen si estamos en una DB vacía (especial para Railway)
 with app.app_context():
-    init_database_if_empty()
+    try:
+        init_database_if_empty()
+    except Exception as e:
+        print(f"⚠️ Error inicializando DB: {e}")
 
 # Configuración básica de Flask
 app.config['SECRET_KEY'] = 'tu_clave_secreta_muy_segura_aqui_2024'
@@ -383,8 +386,6 @@ def mis_tiquetes():
             
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
-
-    return response
 
 # ==========================================
 # RUTAS DE AUTENTICACIÓN
